@@ -1,0 +1,82 @@
+server {
+    listen 80;
+    #listen [::]:80;
+    server_name ipv4.fail;
+    index index.html index.htm index.php default.html default.htm default.php;
+    root /home/wwwroot/ipv4.fail;
+    rewrite ^(.*)$ https://$host$1 permanent;
+    #include other.conf;
+    #error_page   404   /404.html;
+    include enable-php.conf;
+
+    location ~ .*\.(ico|gif|jpg|jpeg|png|bmp|swf)$ {
+        expires 60d;
+        valid_referers none blocked *.bennythink.com *.google.com *.baidu.com *.so.com *.bing.com *.inoreader.com;
+
+    }
+
+    location ~ .*\.(js|css)?$ {
+        expires 30d;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+    location ~ /.well-known {
+        allow all;
+    }
+
+    access_log /home/wwwlogs/ipv4.fail.log;
+}
+
+
+server {
+    listen 443 ssl http2 ;
+    #listen [::]:443 ssl spdy;
+    server_name ipv4.fail; #此处写你的域名
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/ipv4.fail/fullchain.pem; #此处写你的证书文件的路径
+    ssl_certificate_key /etc/letsencrypt/live/ipv4.fail/privkey.pem; #私钥，同上
+
+    ssl_session_timeout 20m;
+    ssl_session_cache builtin:1000 shared:SSL:10m;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    ssl_dhparam /etc/ssl/certs/dhparam.pem;
+    ssl_ciphers 'TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-128-CCM-8-SHA256:TLS13-AES-128-CCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Xss-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+
+    add_header Content-Security-Policy "default-src https: 'unsafe-inline' 'unsafe-eval' data:;";
+    add_header Referrer-Policy "no-referrer-when-downgrade";
+
+    location / {
+        proxy_pass_header Server;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_pass http://127.0.0.1:8888; # 对应端口号的Python应用
+    }
+
+    location /nginx_status {
+        stub_status on;
+        access_log off;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+
+
+    access_log /home/wwwlogs/ipv4.fail.log; #日志文件
+}
