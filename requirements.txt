@@ -1,2 +1,4 @@
 ipip-ipdb
 ipadress
+tornado
+dnspython

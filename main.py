@@ -3,10 +3,12 @@
 
 __author__ = "Benny <benny@bennythink.com>"
 
-import os
 import logging
+import os
+import re
 from platform import uname
 
+import dns.resolver
 from concurrent.futures import ThreadPoolExecutor
 from tornado import web, ioloop, httpserver, gen, options
 from tornado.concurrent import run_on_executor
@@ -45,8 +47,11 @@ class IPQueryHandler(BaseHandler):
     @run_on_executor
     def run_request(self):
         if self.request.method == 'GET':
-            print(333)
-            return '\nhello'
+            user_input = self.get_query_argument('ip', None)
+            return self.process(user_input)
+        elif self.request.method == 'POST':
+            user_input = self.get_argument('ip', None)
+            return self.process(user_input)
 
     @gen.coroutine
     def get(self):
@@ -58,20 +63,83 @@ class IPQueryHandler(BaseHandler):
         res = yield self.run_request()
         self.write(res)
 
+    def process(self, user_content):
+        ipv4 = ipv6 = None
+
+        if not user_content:
+            self.set_status(400)
+            return {"status": "fail", "message": "need ip arguments."}
+
+        if re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content):
+            ipv4 = re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content)[0]
+        elif re.findall(r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))'
+                        r'|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|'
+                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
+                        r'{3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})'
+                        r'|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
+                        r'{3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|'
+                        r'((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
+                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}'
+                        r'(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:'
+                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
+                        r'{3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|'
+                        r'((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
+                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}'
+                        r'(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:'
+                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
+                        r'{3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|'
+                        r'((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
+                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$', user_content):
+            # TODO: IPv6
+            ipv6 = user_content
+        else:
+            # TODO: AAAA
+            self_server = dns.resolver.Resolver()
+            query = self_server.query(user_content)
+            for i in query.response.answer:
+                for x in i.items:
+                    ipv4 = x.address
+
+            # self_server = dns.resolver.Resolver()
+            # self_server.nameservers = ['2620:0:ccc::2', '2400:da00::6666']
+            # query = self_server.query(user_content, dns.rdatatype.AAAA)
+            # for i in query.response.answer:
+            #     for x in i.items:
+            #         ipv6 = x.address
+
+        # TODO: API format
+        if ipv4:
+            location = ip_query.simple_query(ipv4)
+            resp = {"status": "success", "message": "success",
+                    "IP": ipv4, "domain": "", "result": location}
+            return resp
+        if ipv6:
+            pass
+
+        try:
+            location = ip_query.simple_query(ipv4)
+            resp = {"status": "success", "message": "success",
+                    "IP": ipv4, "domain": "", "result": location}
+        except ValueError as e:
+            self.set_status(400)
+            resp = {"status": "fail", "message": str(e),
+                    "IP": user_content, "domain": "", "result": ""}
+        return resp
+
 
 class RunServer:
     root_path = os.path.dirname(__file__)
     page_path = os.path.join(root_path, 'pages')
 
     handlers = [(r'/', IndexHandler),
-                (r'/api/ip', IPQueryHandler),
+                (r'/api/query', IPQueryHandler),
                 (r'/static/(.*)', web.StaticFileHandler, {'path': root_path}),
                 (r'/pages/(.*\.html|.*\.js|.*\.css|.*\.png|.*\.jpg)', web.StaticFileHandler, {'path': page_path}),
                 ]
     settings = {
         "static_path": os.path.join(root_path, "static"),
         "cookie_secret": "5Li05DtnQewDZq1mDVB3HAAhFqUu2vD2USnqezkeu+M=",
-        "xsrf_cookies": True,
+        "xsrf_cookies": False,
         "autoreload": True
     }
 
