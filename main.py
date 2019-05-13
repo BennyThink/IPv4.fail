@@ -94,11 +94,17 @@ class IPQueryHandler(BaseHandler):
             ipv6 = user_content
         else:
             # TODO: AAAA
-            self_server = dns.resolver.Resolver()
-            query = self_server.query(user_content)
-            for i in query.response.answer:
-                for x in i.items:
-                    ipv4 = x.address
+            try:
+                self_server = dns.resolver.Resolver()
+                query = self_server.query(user_content)
+                for i in query.response.answer:
+                    for x in i.items:
+                        ipv4 = x.address
+            except Exception as e:
+                self.set_status(400)
+                resp = {"status": "fail", "message": str(e),
+                        "IP": "", "domain": user_content, "result": ""}
+                return resp
 
             # self_server = dns.resolver.Resolver()
             # self_server.nameservers = ['2620:0:ccc::2', '2400:da00::6666']
