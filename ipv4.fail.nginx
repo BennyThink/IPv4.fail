@@ -41,7 +41,6 @@ server {
     #listen [::]:443 ssl spdy;
     server_name ipv4.fail; #此处写你的域名
 
-    ssl on;
     ssl_certificate /etc/letsencrypt/live/ipv4.fail/fullchain.pem; #此处写你的证书文件的路径
     ssl_certificate_key /etc/letsencrypt/live/ipv4.fail/privkey.pem; #私钥，同上
 
