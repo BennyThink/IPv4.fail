@@ -2,19 +2,6 @@ server {
     listen 80;
     #listen [::]:80;
     server_name ipv4.fail;
-    index index.html index.htm index.php default.html default.htm default.php;
-    root /home/wwwroot/ipv4.fail;
-    include enable-php.conf;
-
-    location ~ .*\.(ico|gif|jpg|jpeg|png|bmp|swf)$ {
-        expires 60d;
-        valid_referers none blocked *.bennythink.com *.google.com *.baidu.com *.so.com *.bing.com *.inoreader.com;
-
-    }
-
-    location ~ .*\.(js|css)?$ {
-        expires 30d;
-    }
 
     location ~ /\. {
         deny all;
@@ -22,7 +9,7 @@ server {
     location ~ /.well-known {
         allow all;
     }
-    
+
     location / {
         proxy_pass_header Server;
         proxy_set_header Host $http_host;
@@ -81,7 +68,6 @@ server {
     location ~ /.well-known {
         allow all;
     }
-
 
     access_log /home/wwwlogs/ipv4.fail.log; #日志文件
 }
