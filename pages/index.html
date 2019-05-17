@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+
+    <title>Hello, world!</title>
+</head>
+<body>
+
+<div class="jumbotron jumbotron-fluid text-center">
+    <div class="container">
+        <h1>IPv4.fail</h1>
+        <p>123456！</p>
+    </div>
+</div>
+<div class="container">
+    <div class="alert alert-danger alert-dismissible fade show" id="error" style="display: none">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>错误!</strong> 失败的操作
+    </div>
+    <!-- Nav pills -->
+    <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" href="#home">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" href="#menu1">Menu 1</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" href="#menu2">Menu 2</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div id="home" class="container tab-pane active"><br>
+
+
+            <form class="form-inline" method="post">
+                <label for="ip">IP:&nbsp;</label>
+                <input type="text" class="form-control" id="ip" placeholder="请输入">
+                <button type="button" id="submit" class="btn btn-outline-primary">查询</button>
+
+
+            </form>
+            <br>
+
+            <div class="card">
+                <div class="card-body">
+                    <p id="ip_info">您现在的IP：</p>
+                    <p id="loc_info">所在位置：</p>
+
+                </div>
+            </div>
+
+
+        </div>
+        <div id="menu1" class="container tab-pane fade"><br>
+            <h3>Menu 1</h3>
+            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                consequat.</p>
+        </div>
+        <div id="menu2" class="container tab-pane fade"><br>
+            <h3>Menu 2</h3>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam
+                rem aperiam.</p>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="../static/js/jquery-3.3.1.min.js"></script>
+<script src="../static/js/popper.min.js"></script>
+<script src="../static/js/bootstrap.min.js"></script>
+<script>
+
+
+    $("#submit").click(function () {
+
+        $.ajax({
+            type: "POST",
+            url: "/api/query",
+            data: {"ip": $("#ip").val()},
+            dataType: "json",
+            success: function (respMsg) {
+                $("#ip_info").text(`${$("#ip_info").text()} ${respMsg.IP}`)
+                $("#loc_info").text(`${$("#loc_info").text()} ${respMsg.result}`)
+            },
+            error: function (respMsg) {
+                console.log(respMsg);
+                $("#error").show();
+                $("#error").hide();
+            }
+        });
+
+    });
+
+
+</script>
+</body>
+</html>
