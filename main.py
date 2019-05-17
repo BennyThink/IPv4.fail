@@ -74,28 +74,12 @@ class IPQueryHandler(BaseHandler):
 
         if re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content):
             ipv4 = re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content)[0]
-        elif re.findall(r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))'
-                        r'|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|'
-                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
-                        r'{3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})'
-                        r'|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
-                        r'{3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|'
-                        r'((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
-                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}'
-                        r'(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:'
-                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
-                        r'{3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|'
-                        r'((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
-                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}'
-                        r'(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:'
-                        r'((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d))'
-                        r'{3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|'
-                        r'((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)'
-                        r'(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$', user_content):
-            # TODO: IPv6
+            ipv6 = "pass"
+        elif ":" in user_content:
             ipv6 = user_content
+            ipv4 = "pass"
         else:
-            # TODO: AAAA
+            # TODO: AAAA, CNAME
             try:
                 self_server = dns.resolver.Resolver()
                 query = self_server.query(user_content)
@@ -115,14 +99,14 @@ class IPQueryHandler(BaseHandler):
             #     for x in i.items:
             #         ipv6 = x.address
 
-        # TODO: API format
-        if ipv4:
-            location = ip_query.simple_query(ipv4)
-            resp = {"status": "success", "message": "success",
-                    "IP": ipv4, "domain": "", "result": location}
-            return resp
-        if ipv6:
-            pass
+        if not ipv4:
+            self.set_status(400)
+            return {"status": "fail", "message": "Bad IPv4 address",
+                    "IP": ipv4, "domain": "", "result": ""}
+        if not ipv6 and not ipv4:
+            self.set_status(400)
+            return {"status": "fail", "message": "Bad IPv6 address",
+                    "IP": ipv4, "domain": "", "result": ""}
 
         try:
             location = ip_query.simple_query(ipv4)

@@ -82,7 +82,8 @@
 <script src="../static/js/bootstrap.min.js"></script>
 <script>
 
-
+    let ipText = $("#ip_info").text();
+    let locText = $("#loc_info").text();
     $("#submit").click(function () {
 
         $.ajax({
@@ -91,13 +92,15 @@
             data: {"ip": $("#ip").val()},
             dataType: "json",
             success: function (respMsg) {
-                $("#ip_info").text(`${$("#ip_info").text()} ${respMsg.IP}`)
-                $("#loc_info").text(`${$("#loc_info").text()} ${respMsg.result}`)
+                $("#ip_info").text(`${ipText} ${respMsg.IP}`);
+                $("#loc_info").text(`${locText} ${respMsg.result}`);
             },
             error: function (respMsg) {
                 console.log(respMsg);
-                $("#error").show();
-                $("#error").hide();
+                let err_banner = $("#error");
+                err_banner.text(respMsg.responseJSON.message);
+                err_banner.show();
+                err_banner.fadeOut(5000);
             }
         });
 
