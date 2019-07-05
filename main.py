@@ -26,11 +26,12 @@ class IndexHandler(BaseHandler):
 
     @run_on_executor
     def run_request(self):
+        user_ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
+        location = ip_query.simple_query(user_ip)
         if self.request.method == 'GET' and 'Mozilla' not in self.request.headers.get('User-Agent'):
-            user_ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
-            return '\nIP: %s  %s' % (user_ip, ip_query.simple_query(user_ip))
+            return '\nIP: %s  %s' % (user_ip, location)
         else:
-            return self.render_string('pages/index.html')
+            return self.render_string('pages/index.html', ip=user_ip, location=location)
 
     @gen.coroutine
     def get(self):
