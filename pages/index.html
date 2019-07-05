@@ -82,8 +82,8 @@
 <script src="../static/js/bootstrap.min.js"></script>
 <script>
 
-    let ipText = $("#ip_info").text();
-    let locText = $("#loc_info").text();
+    let ipPlaceholder = "您现在的IP：";
+    let locPlaceholder = "所在位置：";
     $("#submit").click(function () {
 
         $.ajax({
@@ -92,8 +92,8 @@
             data: {"ip": $("#ip").val()},
             dataType: "json",
             success: function (respMsg) {
-                $("#ip_info").text(`${ipText} ${respMsg.IP}`);
-                $("#loc_info").text(`${locText} ${respMsg.result}`);
+                $("#ip_info").text(`${ipPlaceholder} ${respMsg.IP}`);
+                $("#loc_info").text(`${locPlaceholder} ${respMsg.result}`);
             },
             error: function (respMsg) {
                 console.log(respMsg);
