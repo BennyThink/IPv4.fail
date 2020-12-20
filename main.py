@@ -146,7 +146,7 @@ class RunServer:
         if uname()[0] == 'Windows':
             tornado_server.start()
         else:
-            tornado_server.start(None)
+            tornado_server.start(1)
 
         try:
             print('Server is running on http://{host}:{port}'.format(host=host, port=port))
