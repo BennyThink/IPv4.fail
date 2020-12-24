@@ -1,7 +1,7 @@
 FROM python:alpine
 
 WORKDIR /APP
-COPY requirments.txt /requirements.txt
+COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt && rm /requirements.txt
 COPY . /APP
 
