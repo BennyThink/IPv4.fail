@@ -5,8 +5,9 @@
 # 2023-02-11  14:37
 
 
-import ipdb
 import pathlib
+
+import ipdb
 
 DB_PATH = pathlib.Path(__file__).parent / 'data' / 'ipip.net.ipdb'
 

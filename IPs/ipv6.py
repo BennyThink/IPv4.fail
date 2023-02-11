@@ -11,16 +11,15 @@
 @Author        :a76yyyy
 @version       :2.0
 '''
-import os
-import socket
+import collections
+import ipaddress
 import logging
 import mmap
-import ipaddress
-from struct import pack, unpack
-import collections
-from typing import Tuple, List
-
+import os
 import pathlib
+import socket
+from struct import pack, unpack
+from typing import List, Tuple
 
 DB_PATH = pathlib.Path(__file__).parent / 'data' / 'ipv6wry.db'
 

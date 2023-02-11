@@ -6,11 +6,11 @@ __author__ = "Benny <benny@bennythink.com>"
 import logging
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from platform import uname
 
 import dns.resolver
-from concurrent.futures import ThreadPoolExecutor
-from tornado import web, ioloop, httpserver, gen, options
+from tornado import gen, httpserver, ioloop, options, web
 from tornado.concurrent import run_on_executor
 from tornado.log import enable_pretty_logging
 
