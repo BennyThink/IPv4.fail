@@ -25,3 +25,7 @@ https://freeapi.ipip.net/112.31.13.3
 https://ip.zxinc.org/index.htm
 https://github.com/JohnWong/python-tool
 https://github.com/Rhilip/ipv6wry.db
+
+
+
+https://mailfud.org/geoip-legacy/

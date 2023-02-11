@@ -12,8 +12,11 @@ import dns.resolver
 from concurrent.futures import ThreadPoolExecutor
 from tornado import web, ioloop, httpserver, gen, options
 from tornado.concurrent import run_on_executor
+from tornado.log import enable_pretty_logging
 
 from IPs import ip_query
+
+enable_pretty_logging()
 
 
 class BaseHandler(web.RequestHandler):
@@ -67,18 +70,16 @@ class IPQueryHandler(BaseHandler):
         self.write(res)
 
     def process(self, user_content):
-        ipv4 = ipv6 = None
+        ip = None
 
         if not user_content:
             self.set_status(400)
             return {"status": "fail", "message": "need ip arguments."}
 
         if re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content):
-            ipv4 = re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content)[0]
-            ipv6 = "pass"
+            ip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content)[0]
         elif ":" in user_content:
-            ipv6 = user_content
-            ipv4 = "pass"
+            ip = user_content
         else:
             # TODO: AAAA, CNAME
             try:
@@ -86,7 +87,7 @@ class IPQueryHandler(BaseHandler):
                 query = self_server.query(user_content)
                 for i in query.response.answer:
                     for x in i.items:
-                        ipv4 = x.address
+                        ip = x.address
             except Exception as e:
                 self.set_status(400)
                 resp = {"status": "fail", "message": str(e),
@@ -100,19 +101,13 @@ class IPQueryHandler(BaseHandler):
             #     for x in i.items:
             #         ipv6 = x.address
 
-        if not ipv4:
+        if not ip:
             self.set_status(400)
-            return {"status": "fail", "message": "Bad IPv4 address",
-                    "IP": ipv4, "domain": "", "result": ""}
-        if not ipv6 and not ipv4:
-            self.set_status(400)
-            return {"status": "fail", "message": "Bad IPv6 address",
-                    "IP": ipv4, "domain": "", "result": ""}
+            return {"status": "fail", "message": "Bad IP"}
 
         try:
-            location = ip_query.simple_query(ipv4)
-            resp = {"status": "success", "message": "success",
-                    "IP": ipv4, "domain": "", "result": location}
+            location = ip_query.simple_query(ip)
+            resp = {"status": "success", "message": "success", "IP": ip, "result": location}
         except ValueError as e:
             self.set_status(400)
             resp = {"status": "fail", "message": str(e),

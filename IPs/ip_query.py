@@ -4,22 +4,17 @@
 
 __author__ = 'Benny <benny@bennythink.com>'
 
-
-import ipdb
-import os
-
-DB_PATH = os.path.join(os.path.dirname(__file__), 'ip_database')
+from IPs.ipv4 import query_ipv4
+from IPs.ipv6 import query_ipv6
 
 
 def simple_query(ip: str) -> str:
-    # TODO: non-Chinese IP may need to query maxmind.
-    if ':' in ip:
-        # IPv6
-        pass
+    if ":" in ip:
+        return query_ipv6(ip)
     else:
-        db = ipdb.City(os.path.join(DB_PATH, "ipv4_ipip.ipdb"))
-        return ' '.join(db.find(ip, "CN"))
+        return query_ipv4(ip)
 
 
 if __name__ == '__main__':
-    print(simple_query('1.1.1.1'))
+    print(simple_query('54.222.60.252'))
+    print(simple_query('2603:c020:1:d5ff:81b6:76d6:60fd:cb51'))
