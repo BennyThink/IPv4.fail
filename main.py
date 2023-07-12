@@ -24,6 +24,11 @@ class BaseHandler(web.RequestHandler):
         pass
 
 
+class adsHandler(BaseHandler):
+    def get(self):
+        self.write("google.com, pub-2988254457061384, DIRECT, f08c47fec0942fa0")
+
+
 class IndexHandler(BaseHandler):
     executor = ThreadPoolExecutor(max_workers=20)
 
@@ -123,6 +128,7 @@ class RunServer:
                 (r'/api/query', IPQueryHandler),
                 (r'/static/(.*)', web.StaticFileHandler, {'path': root_path}),
                 (r'/pages/(.*\.html|.*\.js|.*\.css|.*\.png|.*\.jpg)', web.StaticFileHandler, {'path': page_path}),
+                (r'/ads.txt', adsHandler)
                 ]
     settings = {
         "static_path": os.path.join(root_path, "static"),
