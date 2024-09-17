@@ -78,8 +78,9 @@ class IPQueryHandler(BaseHandler):
         ip = None
 
         if not user_content:
-            self.set_status(400)
-            return {"status": "fail", "message": "need ip arguments."}
+            # means not passing IP, try to get current ip
+            user_ip = self.request.headers.get("X-Real-IP", "") or self.request.remote_ip
+            return {"ip":user_ip,"location":ip_query.simple_query(user_ip)}
 
         if re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content):
             ip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', user_content)[0]
